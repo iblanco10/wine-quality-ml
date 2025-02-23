@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import joblib
 import numpy as np
 import os
@@ -10,33 +10,39 @@ scaler = joblib.load("scaler.pkl")
 # Initialize Flask app
 app = Flask(__name__)
 
-@app.route("/")
+# Route for home page (Interactive form)
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return jsonify({
-        "message": "Wine Quality Prediction API is running!",
-        "usage": "Send a POST request to /predict with JSON data in the format: {'features': [fixed_acidity, volatile_acidity, ...]}"
-    })
+    if request.method == "POST":
+        try:
+            # Get form data
+            features = [
+                float(request.form["fixed_acidity"]),
+                float(request.form["volatile_acidity"]),
+                float(request.form["citric_acid"]),
+                float(request.form["residual_sugar"]),
+                float(request.form["chlorides"]),
+                float(request.form["free_sulfur_dioxide"]),
+                float(request.form["total_sulfur_dioxide"]),
+                float(request.form["density"]),
+                float(request.form["pH"]),
+                float(request.form["sulfates"]),
+                float(request.form["alcohol"]),
+            ]
+            
+            # Scale input features
+            features_scaled = scaler.transform([features])
 
-@app.route("/predict", methods=["POST"])
-def predict():
-    try:
-        # Get JSON data from request
-        data = request.get_json()
-        features = np.array(data["features"]).reshape(1, -1)
-        
-        # Scale input features
-        features_scaled = scaler.transform(features)
-        
-        # Predict wine quality
-        prediction = model.predict(features_scaled)
-        
-        # Convert to integer since quality scores are whole numbers
-        predicted_quality = int(round(prediction[0]))
+            # Predict wine quality
+            prediction = model.predict(features_scaled)
+            predicted_quality = int(round(prediction[0]))
 
-        return jsonify({"predicted_quality": predicted_quality})
-    
-    except Exception as e:
-        return jsonify({"error": str(e)})
+            return render_template("index.html", prediction=predicted_quality)
+        
+        except Exception as e:
+            return render_template("index.html", error=str(e))
+
+    return render_template("index.html", prediction=None)
 
 # Run the Flask app
 if __name__ == "__main__":
