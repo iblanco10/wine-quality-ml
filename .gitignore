@@ -1,0 +1,12 @@
+# Ignore virtual environment
+wine_env/
+
+# Ignore dataset files
+*.csv
+winequality.names
+
+# Ignore compiled Python files
+__pycache__/
+*.pyc
+*.pyo
+
