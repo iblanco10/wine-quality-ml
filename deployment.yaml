@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wine-quality-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wine-quality
+  template:
+    metadata:
+      labels:
+        app: wine-quality
+    spec:
+      containers:
+      - name: wine-quality-container
+        image: iblanco10/wine-quality-model:latest
+        ports:
+        - containerPort: 5000
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Always
